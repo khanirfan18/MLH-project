@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Water Gun Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%);
+      --card-bg: rgba(255,255,255,0.94);
+      --card-shadow: 0 4px 32px rgba(102,166,255,0.18), 0 1.5px 2.5px rgba(0,0,0,0.10);
+      --primary: #0093e9;
+      --primary2: #80d0c7;
+      --primary-gradient: linear-gradient(90deg, #0093e9, #80d0c7);
+      --text: #232526;
+      --text-light: #6b7684;
+      --font: 'Rubik', 'Segoe UI', Arial, sans-serif;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      font-family: var(--font);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .game-container {
+      background: var(--card-bg);
+      border-radius: 22px;
+      box-shadow: var(--card-shadow);
+      padding: 42px 34px 30px 34px;
+      min-width: 320px;
+      text-align: center;
+      position: relative;
+      max-width: 98vw;
+      margin: 30px 0;
+    }
+    .game-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 0;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 24px;
+      margin-top: 10px;
+    }
+    .score {
+      font-size: 1.1em;
+      color: var(--text-light);
+      background: #e3f3ff;
+      padding: 7px 18px;
+      border-radius: 15px;
+      font-weight: 500;
+      min-width: 80px;
+      box-shadow: 0 1.5px 3px rgba(0,147,233,0.07);
+    }
+    .choices-row {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-bottom: 24px;
+      margin-top: 8px;
+    }
+    .choice-btn {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 1.25em;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      box-shadow: 0 2px 9px rgba(0,147,233,0.09);
+      transition: background 0.3s, transform 0.12s;
+      outline: none;
+      position: relative;
+      min-width: 95px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .choice-btn:hover, .choice-btn:focus {
+      background: linear-gradient(90deg, #80d0c7 10%, #0093e9 90%);
+      transform: translateY(-2px) scale(1.05);
+    }
+    .choice-emoji {
+      font-size: 2.2em;
+      margin-bottom: 3px;
+    }
+    .result-row {
+      margin-top: 24px;
+      margin-bottom: 7px;
+      font-size: 1.2em;
+      min-height: 36px;
+    }
+    .moves-row {
+      margin-bottom: 3px;
+      font-size: 1.08em;
+      color: #0093e9;
+    }
+    .play-again-btn, .reset-btn {
+      margin-top: 18px;
+      background: var(--primary-gradient);
+      border: none;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: 600;
+      padding: 12px 35px;
+      border-radius: 13px;
+      box-shadow: 0 2px 8px rgba(0,147,233,0.11);
+      cursor: pointer;
+      transition: background 0.23s;
+      margin-right: 15px;
+    }
+    .play-again-btn:hover, .play-again-btn:focus,
+    .reset-btn:hover, .reset-btn:focus {
+      background: linear-gradient(90deg, #0093e9 10%, #80d0c7 90%);
+    }
+    @media (max-width: 600px) {
+      .game-container {
+        padding: 18px 4vw 18px 4vw;
+        min-width: 0;
+        max-width: 98vw;
+      }
+      .choices-row {
+        gap: 15px;
+      }
+      .play-again-btn, .reset-btn {
+        width: 90vw;
+        margin-bottom: 8px;
+        margin-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-title">🐍💧🗡️ Snake Water Gun</div>
+    <div class="scoreboard">
+      <div class="score" id="userScore">You: 0</div>
+      <div class="score" id="compScore">Computer: 0</div>
+    </div>
+    <div class="choices-row">
+      <button class="choice-btn" data-choice="snake">
+        <span class="choice-emoji">🐍</span>
+        Snake
+      </button>
+      <button class="choice-btn" data-choice="water">
+        <span class="choice-emoji">💧</span>
+        Water
+      </button>
+      <button class="choice-btn" data-choice="gun">
+        <span class="choice-emoji">🗡️</span>
+        Gun
+      </button>
+    </div>
+    <div class="moves-row" id="moves"></div>
+    <div class="result-row" id="result"></div>
+    <button class="play-again-btn" id="playAgain" style="display:none;">Play Again</button>
+    <button class="reset-btn" id="resetBtn">Reset</button>
+  </div>
+
+  <script>
+    const choices = ["snake", "water", "gun"];
+    const emojis = { snake: "🐍", water: "💧", gun: "🗡️" };
+    let userScore = 0, compScore = 0, gameOver = false, roundsToWin = 5;
+
+    function getComputerChoice() {
+      return choices[Math.floor(Math.random() * choices.length)];
+    }
+
+    function decideWinner(user, comp) {
+      if (user === comp) return "draw";
+      if (
+        (user === "snake" && comp === "water") ||
+        (user === "water" && comp === "gun") ||
+        (user === "gun" && comp === "snake")
+      ) return "win";
+      return "lose";
+    }
+
+    function updateScoreboard() {
+      document.getElementById("userScore").textContent = `You: ${userScore}`;
+      document.getElementById("compScore").textContent = `Computer: ${compScore}`;
+    }
+
+    function showResult(user, comp, result) {
+      document.getElementById("moves").innerHTML =
+        `You: <b>${capitalize(user)} ${emojis[user]}</b> &nbsp;&nbsp; | &nbsp;&nbsp; Computer: <b>${capitalize(comp)} ${emojis[comp]}</b>`;
+      let text = '';
+      if (result === "win") text = "<span style='color:#38b000;font-weight:600;'>You Win this round! 🎉</span>";
+      else if (result === "lose") text = "<span style='color:#dc2f02;font-weight:600;'>You Lose this round!</span>";
+      else text = "<span style='color:#6b7684;font-weight:600;'>It's a Draw.</span>";
+      document.getElementById("result").innerHTML = text;
+    }
+
+    function capitalize(str) {
+      return str[0].toUpperCase() + str.slice(1);
+    }
+
+    function endGame() {
+      gameOver = true;
+      const resultDiv = document.getElementById("result");
+      let finalMsg = '';
+      if (userScore > compScore)
+        finalMsg = `<span style='font-size:1.15em;color:#38b000;font-weight:700;'>🏆 Congratulations! You Won the Game!</span>`;
+      else if (userScore < compScore)
+        finalMsg = `<span style='font-size:1.15em;color:#dc2f02;font-weight:700;'>😔 Computer Won the Game!</span>`;
+      else
+        finalMsg = `<span style='font-size:1.15em;color:#0093e9;font-weight:700;'>🤝 It's a Tie Game!</span>`;
+      resultDiv.innerHTML = finalMsg;
+      document.getElementById("playAgain").style.display = "inline-block";
+    }
+
+    function resetGame() {
+      userScore = 0;
+      compScore = 0;
+      gameOver = false;
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("moves").innerHTML = "";
+      document.getElementById("playAgain").style.display = "none";
+      updateScoreboard();
+    }
+
+    document.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (gameOver) return;
+        const userChoice = this.getAttribute('data-choice');
+        const compChoice = getComputerChoice();
+        const result = decideWinner(userChoice, compChoice);
+
+        if (result === "win") userScore++;
+        else if (result === "lose") compScore++;
+
+        updateScoreboard();
+        showResult(userChoice, compChoice, result);
+
+        if (userScore === roundsToWin || compScore === roundsToWin) {
+          setTimeout(endGame, 1100);
+        }
+      });
+    });
+
+    document.getElementById("playAgain").addEventListener("click", resetGame);
+    document.getElementById("resetBtn").addEventListener("click", resetGame);
+  </script>
+</body>
+</html>
